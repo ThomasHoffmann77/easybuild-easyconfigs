@@ -18,6 +18,46 @@ dependencies = [
     ('e3nn', '0.3.3'),
     ('wandb', '0.13.4'),
 ]
+local_models_url = 'http://files.ipd.uw.edu/pub/RFdiffusion'
+local_pysp = '%(installdir)s/lib/python%(pyshortver)s/site-packages'
+local_models_dst = '%(installdir)s/models/'
+local_schedules_dst = '%(installdir)s/schedules/'
+
+local_models = [
+    ("Base_ckpt.pt", "6f5902ac237024bdd0c176cb93063dc4"),
+    ("Complex_base_ckpt.pt", "e29311f6f1bf1af907f9ef9f44b8328b"),
+    ("Complex_Fold_base_ckpt.pt", "60f09a193fb5e5ccdc4980417708dbab"),
+    ("InpaintSeq_ckpt.pt", "74f51cfb8b440f50d70878e05361d8f0"),
+    ("InpaintSeq_Fold_ckpt.pt", "76d00716416567174cdb7ca96e208296"),
+    ("ActiveSite_ckpt.pt", "5532d2e1f3a4738decd58b19d633b3c3"),
+    ("Base_epoch8_ckpt.pt", "12fc204edeae5b57713c5ad7dcb97d39"),
+    ("Complex_beta_ckpt.pt", "f572d396fae9206628714fb2ce00f72e"),
+    ("RF_structure_prediction_weights.pt", "1befcb9b28e2f778f53d47f18b7597fa"),
+]
+
+components = [('schedules', version, {
+    'easyblock': 'CmdCp',
+    'source_urls': ['https://files.ipd.uw.edu/krypton/'],
+    'sources': [{
+        'filename': '%(name)s_v%(version)s.zip',
+        'download_filename': '%(name)s.zip',
+        'extract_cmd': 'unzip -j %s'
+    }],
+    'cmds_map': [('.*', '')],
+    'files_to_copy': [(['*.pkl'], local_schedules_dst)],
+})]
+
+components += [
+    (lname, lver, {
+        'easyblock': 'CmdCp',
+        'source_urls': ['%s/%%(version)s/' % local_models_url],
+        'sources': [{
+            'filename': '%(name)s_v%(version)s',
+            'download_filename': '%(name)s',
+            'extract_cmd': 'cp %s ' + lname}],
+        'cmds_map': [('.*', '')],
+        'files_to_copy': [(['*.pt'], local_models_dst)],
+    }) for lname, lver in local_models]
 
 use_pip = True
 
@@ -49,6 +89,20 @@ exts_list = [
              'e25da7f476acacb6af58bd84f40aca712538900b0b48532b22f9a133d6886da2'},
         ],
     }),
+]
+
+modextravars = {'RFDIFFUSION_MODELS': local_models_dst}
+
+postinstallcmds = [
+    'cp -rpP config  %(installdir)s',
+    'cp -rpP examples %(installdir)s',
+    'cd %s/%%(namelower)s/ && ln -s ../../../../{models,schedules,examples}  .' % local_pysp
+]
+
+sanity_check_commands = [
+    "run_inference.py --help",
+    # "run_inference.py 'contigmap.contigs=[150-150]' " +
+    # "inference.output_prefix=test_outputs/test inference.num_designs=1"
 ]
 
 sanity_pip_check = True
