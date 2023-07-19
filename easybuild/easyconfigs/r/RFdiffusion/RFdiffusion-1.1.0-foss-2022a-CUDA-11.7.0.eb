@@ -81,7 +81,7 @@ postinstallcmds = [
 sanity_check_commands = ["run_inference.py --help",
                          # "run_inference.py 'contigmap.contigs=[150-150]' " +
                          # "inference.output_prefix=test_outputs/test inference.num_designs=1"
-                        ]
+]
 sanity_pip_check = True
 
 sanity_check_paths = {
