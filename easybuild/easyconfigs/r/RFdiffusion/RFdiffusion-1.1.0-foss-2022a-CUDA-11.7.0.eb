@@ -91,4 +91,4 @@ sanity_check_paths = {
         '%s/%%(namelower)s/config/inference' % _pysp]
 }
 
-moduleclass = 'bio'=
+moduleclass = 'bio'
